@@ -37,6 +37,7 @@ namespace Scanner {
 			Console.WriteLine("Connecting to input port at " + host + ":" + inPort + "...");
 			try {
 				inSocket.Connect(host, inPort);
+				Console.WriteLine("Connection to input port established.");
 			}
 			catch(SocketException) {
 				Console.WriteLine("Connection to input port failed.");
@@ -45,20 +46,23 @@ namespace Scanner {
 			Console.WriteLine("Connecting to output port at " + host + ":" + outPort + "...");
 			try {
 				outSocket.Connect(host, outPort);
+				Console.WriteLine("Connection to output port established.");
 			}
 			catch(SocketException) {
 				Console.WriteLine("Connection to output port failed.");
 				error = true;
 			}
 			if(!error) {
-				Console.WriteLine("Connection established.");
 				inSocket.Send(commandBuffer);
 				outSocket.Receive(responseBuffer);
+				//Console.WriteLine(System.Text.Encoding.ASCII.GetString(responseBuffer.Take(600).ToArray()));
 				if(int.TryParse(System.Text.Encoding.ASCII.GetString(responseBuffer.Take(9).ToArray()), out imageSize)) {
+					Console.WriteLine("Data received. Generating image...");
 					output = Image.FromStream(new MemoryStream(responseBuffer.Skip(9).Take(imageSize).ToArray()));
 					output.Save(outputPath, ImageFormat.Jpeg);
-					//In a valid response, the first nine bytes are an ASCII
-					//character string representing the size of the image data
+					Console.WriteLine("Image saved.");
+					//In a valid response, the first nine bytes are an ASCII character 
+					//string containing a number indicating the size of the image data
 				}
 				else
 					Console.WriteLine("Invalid response from reader.");
